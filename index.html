@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Second Look — Is this message a scam?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F5F7FA; --surface:#FFFFFF; --ink:#132238; --muted:#4A5568; --line:#C9D2DE;
+  --brand:#1E4FA0; --brand-ink:#FFFFFF; --focus:#F2B705;
+  --safe:#17663F; --safe-bg:#E3F4EA; --warn:#8A4B00; --warn-bg:#FFF1D6; --bad:#A3201A; --bad-bg:#FCE4E2;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0F1724; --surface:#18233A; --ink:#EEF2F8; --muted:#B4BFCF; --line:#34435E;
+  --brand:#6F9BEA; --brand-ink:#0F1724; --focus:#F2B705;
+  --safe:#7BD9A4; --safe-bg:#143326; --warn:#F5C26B; --warn-bg:#3A2A10; --bad:#FF8C84; --bad-bg:#3D1715;
+  color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0F1724; --surface:#18233A; --ink:#EEF2F8; --muted:#B4BFCF; --line:#34435E;
+  --brand:#6F9BEA; --brand-ink:#0F1724; --focus:#F2B705;
+  --safe:#7BD9A4; --safe-bg:#143326; --warn:#F5C26B; --warn-bg:#3A2A10; --bad:#FF8C84; --bad-bg:#3D1715;
+  color-scheme:dark;}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Atkinson Hyperlegible",Verdana,"Segoe UI",system-ui,sans-serif;font-size:20px;line-height:1.55}
+main{max-width:640px;margin:0 auto;padding:40px 20px 64px}
+.brand{display:flex;align-items:center;gap:12px;font-weight:700;font-size:20px;color:var(--brand);margin-bottom:28px}
+.brand svg{width:34px;height:34px;flex:none}
+h1{font-size:clamp(34px,8vw,48px);line-height:1.1;margin:0 0 14px;letter-spacing:-0.01em}
+.lede{color:var(--muted);margin:0 0 30px;max-width:34ch}
+label{display:block;font-weight:700;margin-bottom:10px}
+textarea{width:100%;min-height:190px;padding:18px;font:inherit;font-size:20px;color:var(--ink);background:var(--surface);border:2px solid var(--line);border-radius:14px;resize:vertical}
+textarea:focus{outline:4px solid var(--focus);outline-offset:2px;border-color:var(--brand)}
+.btn{display:block;width:100%;margin-top:16px;padding:20px;font:inherit;font-size:24px;font-weight:700;color:var(--brand-ink);background:var(--brand);border:0;border-radius:14px;cursor:pointer}
+.btn:disabled{opacity:.6;cursor:wait}
+.btn:focus-visible,.link:focus-visible,.ex:focus-visible{outline:4px solid var(--focus);outline-offset:3px}
+.examples{margin-top:22px;color:var(--muted);font-size:18px}
+.ex{font:inherit;font-size:18px;color:var(--brand);background:none;border:0;padding:4px 0;text-decoration:underline;text-underline-offset:3px;cursor:pointer;margin-right:14px}
+#result{margin-top:34px}
+.verdict{border-radius:18px;padding:26px 24px;border:2px solid currentColor}
+.verdict.safe{color:var(--safe);background:var(--safe-bg)}
+.verdict.warn{color:var(--warn);background:var(--warn-bg)}
+.verdict.bad{color:var(--bad);background:var(--bad-bg)}
+.big{display:flex;align-items:center;gap:14px;font-size:clamp(30px,7vw,40px);font-weight:700;line-height:1.1;margin:0 0 12px}
+.big svg{width:44px;height:44px;flex:none}
+.verdict p,.verdict li{color:var(--ink)}
+.verdict h2{font-size:20px;margin:20px 0 6px;color:var(--ink)}
+.verdict ul{margin:0;padding-left:24px}
+.status{padding:22px;border-radius:14px;background:var(--surface);border:2px dashed var(--line);color:var(--muted)}
+.rule{margin-top:40px;padding:20px 22px;background:var(--surface);border-left:6px solid var(--brand);border-radius:6px}
+.rule strong{display:block;margin-bottom:4px}
+.fine{margin-top:24px;font-size:16px;color:var(--muted)}
+.meter{margin-top:12px;font-size:17px;color:var(--muted);text-align:center}
+.plan{margin-top:40px;padding:26px 24px;background:var(--surface);border:2px solid var(--brand);border-radius:18px}
+.plan h2{font-size:26px;margin:0 0 6px}
+.plan .price{font-size:20px;font-weight:700;color:var(--brand);margin:0 0 12px}
+.plan ul{margin:0 0 18px;padding-left:24px}
+.plan a.btn{text-align:center;text-decoration:none}
+.plan a.btn:focus-visible{outline:4px solid var(--focus);outline-offset:3px}
+.code-row{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+.code-row input{flex:1 1 180px;min-width:0;padding:14px;font:inherit;font-size:18px;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:10px}
+.code-row input:focus{outline:4px solid var(--focus);outline-offset:2px}
+.code-row button{padding:14px 20px;font:inherit;font-size:18px;font-weight:700;color:var(--brand);background:none;border:2px solid var(--brand);border-radius:10px;cursor:pointer}
+.code-msg{margin:10px 0 0;font-size:17px;color:var(--muted)}
+.link{color:var(--brand);font:inherit;font-size:18px;background:none;border:0;padding:0;margin-top:16px;text-decoration:underline;cursor:pointer}
+@media (prefers-reduced-motion:no-preference){.verdict{animation:pop .25s ease-out}@keyframes pop{from{transform:scale(.97);opacity:0}to{transform:none;opacity:1}}}
+</style>
+</head>
+<body>
+<main>
+  <div class="brand">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="13" cy="13" r="9" fill="none" stroke="currentColor" stroke-width="3"/><path d="M20 20l8 8" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/></svg>
+    Second Look
+  </div>
+  <h1>Got a message that seems off?</h1>
+  <p class="lede">Paste it below and we'll tell you if it looks like a scam, in plain words.</p>
+
+  <label for="msg">The message you got</label>
+  <textarea id="msg" placeholder="Paste the text, email, or what the caller said here…"></textarea>
+  <button class="btn" id="check">Check this message</button>
+  <p class="meter" id="meter"></p>
+
+  <div class="examples">Try an example:
+    <button class="ex" data-ex="0">Fake package text</button>
+    <button class="ex" data-ex="1">Grandchild in trouble</button>
+    <button class="ex" data-ex="2">Real reminder</button>
+  </div>
+
+  <div id="result" aria-live="polite"></div>
+
+  <section class="plan" id="plan" aria-labelledby="plan-title">
+    <h2 id="plan-title">Family Plan</h2>
+    <p class="price">$5 a month</p>
+    <ul>
+      <li>Unlimited checks for everyone in your family</li>
+      <li>Help keep Second Look running and growing</li>
+      <li>First access to text forwarding and family alerts</li>
+    </ul>
+    <a class="btn" id="buy" href="#" target="_blank" rel="noopener">Get the Family Plan</a>
+    <div class="code-row">
+      <label for="code" class="sr-only" style="position:absolute;left:-9999px">Family code</label>
+      <input id="code" placeholder="Already a member? Enter your family code" autocomplete="off">
+      <button id="use-code">Use code</button>
+    </div>
+    <p class="code-msg" id="code-msg"></p>
+  </section>
+
+  <div class="rule">
+    <strong>The golden rule</strong>
+    Never send money, gift cards, or codes to someone who contacted you first. Hang up and call the person or company back using a number you already trust.
+  </div>
+  <p class="fine">Second Look gives its best guess and can be wrong. If you're unsure, ask someone you trust before doing anything.</p>
+</main>
+
+<script>
+// ===== Settings =====
+const STRIPE_LINK = "https://buy.stripe.com/your-link-here"; // paste your Stripe Payment Link
+// ====================
+
+const store = {
+  get(k){ try { return localStorage.getItem(k); } catch { return null; } },
+  set(k,v){ try { localStorage.setItem(k,v); } catch {} },
+  del(k){ try { localStorage.removeItem(k); } catch {} }
+};
+const familyCode = () => store.get("sl-code") || "";
+const meter = document.getElementById("meter");
+
+// The server keeps the real count; the page just shows it.
+function showRemaining(d){
+  if (d && d.family) { meter.textContent = "Family Plan: unlimited checks"; return; }
+  if (!d || typeof d.remaining !== "number") { meter.textContent = ""; return; }
+  meter.textContent = d.remaining === 1 ? "1 free check left today" : d.remaining + " free checks left today";
+}
+async function updateMeter(){
+  try {
+    const r = await fetch("/api/check?code=" + encodeURIComponent(familyCode()));
+    const d = await r.json();
+    if (d.badCode) { store.del("sl-code"); codeMsg.textContent = "That family code didn't work. Check it and try again."; }
+    showRemaining(d);
+  } catch { meter.textContent = ""; }
+}
+
+const examples = [
+  "USPS: Your package is on hold due to an incomplete address. Update your details within 24 hours or it will be returned: usps-redelivery-help.com/track",
+  "Grandma it's me, I got in a car accident and I'm at the police station. Please don't tell Mom. I need $2,000 for bail, can you get Target gift cards and send me the numbers? I'll pay you back.",
+  "Hi, this is Dr. Patel's office reminding you of your appointment Thursday at 10:30am. Reply C to confirm or call us at the number on your card to reschedule."
+];
+const msg = document.getElementById("msg");
+const btn = document.getElementById("check");
+const out = document.getElementById("result");
+document.querySelectorAll(".ex").forEach(b => b.onclick = () => { msg.value = examples[+b.dataset.ex]; out.innerHTML = ""; msg.focus(); });
+
+const icons = {
+  safe:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="currentColor"/><path d="M7 12.5l3.2 3.2L17 9" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  warn:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2L23 21H1z" fill="currentColor"/><path d="M12 9v5" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/><circle cx="12" cy="17.6" r="1.5" fill="#fff"/></svg>',
+  bad:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="currentColor"/><path d="M8 8l8 8M16 8l-8 8" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>'
+};
+const titles = { safe:"Looks safe", warn:"Be careful", bad:"Likely a scam" };
+
+function el(tag, cls, text){ const e=document.createElement(tag); if(cls) e.className=cls; if(text!=null) e.textContent=text; return e; }
+function status(text){ out.innerHTML=""; out.appendChild(el("div","status",text)); }
+
+function render(r){
+  const kind = ["safe","warn","bad"].includes(r.verdict) ? r.verdict : "warn";
+  out.innerHTML="";
+  const box = el("div","verdict "+kind);
+  const big = el("p","big"); big.innerHTML = icons[kind]; big.appendChild(document.createTextNode(titles[kind]));
+  box.appendChild(big);
+  if (r.summary) box.appendChild(el("p",null,r.summary));
+  if (Array.isArray(r.reasons) && r.reasons.length){
+    box.appendChild(el("h2",null,"Why we think so"));
+    const ul = el("ul"); r.reasons.slice(0,4).forEach(x => ul.appendChild(el("li",null,x))); box.appendChild(ul);
+  }
+  if (r.next_step){ box.appendChild(el("h2",null,"What to do")); box.appendChild(el("p",null,r.next_step)); }
+  out.appendChild(box);
+  const again = el("button","link","Check another message");
+  again.onclick = () => { msg.value=""; out.innerHTML=""; msg.focus(); };
+  out.appendChild(again);
+  box.scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+btn.onclick = async () => {
+  const text = msg.value.trim();
+  if (!text){ status("Paste a message in the box above first, then tap Check this message."); msg.focus(); return; }
+  btn.disabled = true; btn.textContent = "Checking…";
+  status("Taking a careful look. This can take a few seconds.");
+  try {
+    const res = await fetch("/api/check", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: text, code: familyCode() })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.status === 402) {
+      if (data.badCode) { store.del("sl-code"); codeIn.value = ""; codeMsg.textContent = "That family code didn't work. Check it and try again."; }
+      showRemaining(data); showLimit(data.error); reset(); return;
+    }
+    if (!res.ok) throw new Error(data.error || "Something went wrong while checking. Try again in a moment.");
+    showRemaining(data);
+    render(data);
+  } catch (e) {
+    status(e.message || "Something went wrong while checking. Try again in a moment.");
+  }
+  reset();
+};
+function showLimit(text){
+  out.innerHTML = "";
+  const box = el("div","verdict warn");
+  box.appendChild(el("p","big","That's today's free checks"));
+  box.appendChild(el("p",null, text || "Free checks come back tomorrow. For unlimited checks for the whole family, get the Family Plan."));
+  const go = el("button","link","See the Family Plan");
+  go.onclick = () => document.getElementById("plan").scrollIntoView({behavior:"smooth"});
+  out.appendChild(box); out.appendChild(go);
+  box.scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+document.getElementById("buy").href = STRIPE_LINK;
+const codeIn = document.getElementById("code"), codeMsg = document.getElementById("code-msg");
+codeIn.value = familyCode();
+document.getElementById("use-code").onclick = () => {
+  const c = codeIn.value.trim();
+  if (!c) { store.del("sl-code"); codeMsg.textContent = "Code removed."; updateMeter(); return; }
+  store.set("sl-code", c);
+  codeMsg.textContent = "Code saved.";
+  updateMeter();
+};
+updateMeter();
+
+function reset(){ btn.disabled = false; btn.textContent = "Check this message"; }
+</script>
+</body>
+</html>
