@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Second Look – Scam Checker</title>
+<meta name="description" content="Free scam checker. Paste a suspicious text, email, or call and find out in seconds if it's a scam, explained in plain words.">
+<meta property="og:title" content="Second Look – Scam Checker">
+<meta property="og:description" content="Got a message that seems off? Paste it in and find out if it's a scam, in plain words.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#FFE7A1">
+<meta name="color-scheme" content="light only">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Second Look">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Fredoka:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FFFFFF; --sun:#FFE7A1; --sun-deep:#F5B700; --ink:#2D1B3D; --muted:#5B4B68; --line:#E4DAEC;
+  --card:#FFFFFF; --soft:#F5F0FA; --brand:#0E6B66; --brand-ink:#FFFFFF; --focus:#F5B700;
+  --safe:#17663F; --safe-bg:#E3F4EA; --warn:#8A4B00; --warn-bg:#FFF1D6; --bad:#A3201A; --bad-bg:#FCE4E2;
+  --shadow:0 2px 0 #2D1B3D14, 0 12px 30px -12px #2D1B3D33;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  color-scheme:light;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Atkinson Hyperlegible",Verdana,"Segoe UI",system-ui,sans-serif;font-size:20px;line-height:1.55}
+h1,h2,h3,.display{font-family:"Fredoka","Atkinson Hyperlegible",Verdana,sans-serif;font-weight:600;letter-spacing:-0.005em}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+a{color:var(--brand)}
+:focus-visible{outline:4px solid var(--focus);outline-offset:3px}
+
+/* Hero */
+.hero{background:var(--sun);border-bottom-left-radius:48px 28px;border-bottom-right-radius:48px 28px;padding:28px 0 56px}
+.brand{display:flex;align-items:center;gap:10px;font-family:"Fredoka",sans-serif;font-weight:600;font-size:24px;margin-bottom:28px}
+.brand svg{width:36px;height:36px;flex:none}
+.hero-grid{display:grid;grid-template-columns:1fr;gap:28px;align-items:start}
+@media (min-width:900px){.hero-grid{grid-template-columns:1.25fr .75fr;gap:40px}}
+h1{font-size:clamp(36px,7vw,56px);line-height:1.05;margin:0 0 14px}
+.lede{color:var(--muted);margin:0 0 26px;max-width:36ch;font-size:22px}
+.checker{background:var(--card);border-radius:24px;padding:22px;box-shadow:var(--shadow)}
+label{display:block;font-weight:700;margin-bottom:10px}
+textarea{width:100%;min-height:170px;padding:16px;font:inherit;font-size:20px;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:16px;resize:vertical}
+textarea:focus{outline:4px solid var(--focus);outline-offset:2px;border-color:var(--brand)}
+.btn{display:block;width:100%;margin-top:14px;padding:18px 20px;font:inherit;font-family:"Fredoka",sans-serif;font-size:24px;font-weight:600;color:var(--brand-ink);background:var(--brand);border:0;border-radius:999px;cursor:pointer;text-align:center;text-decoration:none;box-shadow:0 4px 0 #0000002a}
+.btn:active{transform:translateY(2px);box-shadow:0 2px 0 #0000002a}
+.btn:disabled{opacity:.6;cursor:wait}
+.meter{margin:12px 0 0;font-size:17px;color:var(--muted);text-align:center}
+.examples{margin-top:16px;font-size:17px;color:var(--muted)}
+.ex{font:inherit;font-size:17px;color:var(--ink);background:var(--soft);border:2px solid var(--line);border-radius:999px;padding:6px 14px;margin:6px 6px 0 0;cursor:pointer}
+.ex:hover{border-color:var(--brand)}
+.hero-art{display:none}
+@media (min-width:900px){.hero-art{display:block;padding-top:40px}}
+.hero-art svg{width:100%;height:auto}
+
+/* Results (used by script) */
+#result{margin-top:20px}
+#result:empty{display:none}
+.verdict{border-radius:20px;padding:24px 22px;border:2px solid currentColor}
+.verdict.safe{color:var(--safe);background:var(--safe-bg)}
+.verdict.warn{color:var(--warn);background:var(--warn-bg)}
+.verdict.bad{color:var(--bad);background:var(--bad-bg)}
+.big{display:flex;align-items:center;gap:14px;font-family:"Fredoka",sans-serif;font-size:clamp(28px,6vw,36px);font-weight:600;line-height:1.1;margin:0 0 12px}
+.big svg{width:44px;height:44px;flex:none}
+.verdict p,.verdict li{color:var(--ink)}
+.verdict h2{font-size:20px;margin:18px 0 6px;color:var(--ink)}
+.verdict ul{margin:0;padding-left:24px}
+.status{padding:20px;border-radius:16px;background:var(--soft);color:var(--muted)}
+.link{color:var(--brand);font:inherit;font-size:18px;background:none;border:0;padding:0;margin-top:14px;text-decoration:underline;cursor:pointer}
+
+/* Sections */
+section.band{padding:56px 0 8px}
+.section-title{font-size:clamp(28px,5vw,38px);line-height:1.15;margin:0 0 10px}
+.section-lede{color:var(--muted);margin:0 0 30px;max-width:52ch}
+
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:18px;grid-template-columns:1fr}
+@media (min-width:760px){.steps{grid-template-columns:repeat(3,1fr)}}
+.steps li{background:var(--soft);border-radius:22px;padding:24px}
+.step-num{display:inline-grid;place-items:center;width:46px;height:46px;border-radius:50%;background:var(--sun-deep);color:#2D1B3D;font-family:"Fredoka",sans-serif;font-weight:600;font-size:24px;margin-bottom:12px}
+.steps h3{font-size:24px;margin:0 0 6px}
+@media (max-width:759px){
+  .steps li{display:grid;grid-template-columns:auto 1fr;column-gap:14px;padding:18px}
+  .step-num{grid-row:span 2;margin:0;width:40px;height:40px;font-size:21px}
+  .steps h3{font-size:22px;margin:4px 0 2px}
+}
+.steps p{margin:0;color:var(--muted)}
+
+.stats{background:var(--ink);color:var(--bg);border-radius:28px;padding:34px 26px;display:grid;gap:26px;grid-template-columns:1fr}
+@media (min-width:760px){.stats{grid-template-columns:repeat(3,1fr);padding:40px 34px}}
+.stat strong{display:block;font-family:"Fredoka",sans-serif;font-weight:600;font-size:clamp(40px,7vw,52px);line-height:1;color:var(--sun-deep);margin-bottom:8px}
+.stat span{font-size:19px}
+.source{margin:14px 4px 0;font-size:16px;color:var(--muted)}
+
+.scams{display:grid;gap:16px;grid-template-columns:1fr}
+@media (min-width:640px){.scams{grid-template-columns:repeat(2,1fr)}}
+@media (min-width:960px){.scams{grid-template-columns:repeat(3,1fr)}}
+.scam{background:var(--card);border:2px solid var(--line);border-radius:20px;padding:22px}
+.scam .emoji{font-size:34px;line-height:1;display:block;margin-bottom:10px}
+.scam h3{font-size:22px;margin:0 0 6px}
+.scam .says{font-style:italic;color:var(--muted);margin:0 0 10px}
+.scam .tell{margin:0;font-size:18px}
+.scam .tell b{color:var(--bad)}
+
+.plan{background:var(--sun);border-radius:28px;padding:32px 26px;display:grid;gap:22px;grid-template-columns:1fr;align-items:center}
+@media (min-width:860px){.plan{grid-template-columns:1.1fr .9fr;padding:40px}}
+.plan h2{font-size:34px;margin:0 0 4px}
+.plan .price{font-family:"Fredoka",sans-serif;font-size:24px;font-weight:600;color:var(--ink);margin:0 0 12px}
+.plan ul{margin:0;padding-left:24px}
+.plan-box{background:var(--card);border-radius:22px;padding:22px;box-shadow:var(--shadow)}
+.btn.soon{background:var(--soft);color:var(--muted);box-shadow:none;cursor:default}
+.code-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.code-row input{flex:1 1 170px;min-width:0;padding:13px 14px;font:inherit;font-size:18px;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:12px}
+.code-row input:focus{outline:4px solid var(--focus);outline-offset:2px}
+.code-row button{padding:13px 18px;font:inherit;font-size:18px;font-weight:700;color:var(--brand);background:none;border:2px solid var(--brand);border-radius:12px;cursor:pointer}
+.code-msg{margin:10px 0 0;font-size:17px;color:var(--muted)}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:28px}
+.topbar .brand{margin-bottom:0}
+.top-plan{flex:none;font-family:"Fredoka",sans-serif;font-weight:600;font-size:18px;color:var(--ink);text-decoration:none;background:var(--card);border:2px solid var(--ink);border-radius:999px;padding:8px 16px}
+.top-plan:hover{background:var(--soft)}
+.plan-nudge{margin:14px 0 0;font-size:18px;color:var(--muted)}
+.plan-nudge a{font-weight:700}
+.phone-card{display:flex;gap:22px;align-items:flex-start;background:var(--soft);border-radius:28px;padding:28px 24px}
+.phone-icon{width:72px;height:72px;border-radius:18px;flex:none;box-shadow:var(--shadow)}
+.phone-body{flex:1;min-width:0}
+.phone-card h2{font-size:clamp(26px,5vw,32px);line-height:1.15;margin:0 0 6px}
+.phone-lede{margin:0 0 16px;color:var(--muted)}
+.how-add{margin:0;padding-left:28px}
+.how-add li{margin:0 0 10px;padding-left:4px}
+.how-add li::marker{font-family:"Fredoka",sans-serif;font-weight:600;color:var(--brand)}
+.share-ico{display:inline-grid;place-items:center;width:34px;height:34px;vertical-align:middle;margin-left:4px;border-radius:9px;background:var(--card);border:2px solid var(--line);color:#0A7AFF}
+.share-ico svg{width:22px;height:22px}
+.btn-small{width:auto;display:inline-block;font-size:21px;padding:14px 26px;margin:0 0 6px}
+.how-add-desk,.how-add-done{margin:0;font-weight:700}
+@media (max-width:560px){.phone-card{flex-direction:column;gap:14px;padding:24px 20px}.phone-icon{width:60px;height:60px}}
+footer{margin-top:64px;padding:40px 0 48px;border-top:2px solid var(--line)}
+.rule{display:flex;gap:16px;align-items:flex-start;background:var(--soft);border-radius:22px;padding:22px}
+.rule .emoji{font-size:34px;line-height:1}
+.rule strong{display:block;font-family:"Fredoka",sans-serif;font-size:22px;font-weight:600;margin-bottom:4px}
+.rule p{margin:0}
+.fine{margin-top:20px;font-size:16px;color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){
+  .verdict{animation:pop .3s ease-out}
+  @keyframes pop{from{transform:scale(.96);opacity:0}to{transform:none;opacity:1}}
+  .hero-art .glass{animation:peek 6s ease-in-out infinite;transform-origin:center}
+  @keyframes peek{0%,100%{transform:translate(0,0) rotate(0)}50%{transform:translate(-8px,6px) rotate(-6deg)}}
+}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <div class="topbar">
+    <div class="brand">
+      <svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="20" fill="#2D1B3D"/><circle cx="18" cy="18" r="8" fill="none" stroke="#F5B700" stroke-width="3.5"/><path d="M24 24l6 6" stroke="#F5B700" stroke-width="4" stroke-linecap="round"/></svg>
+      Second Look
+    </div>
+    <a class="top-plan" href="#plan">Family Plan</a>
+    </div>
+    <div class="hero-grid">
+      <div>
+        <h1>Got a message that seems off?</h1>
+        <p class="lede">Paste it here and we'll tell you if it looks like a scam, in plain, friendly words.</p>
+        <div class="checker">
+          <label for="msg">The message you got</label>
+          <textarea id="msg" placeholder="Paste the text, email, or what the caller said…"></textarea>
+          <button class="btn" id="check">Check this message</button>
+          <p class="meter" id="meter"></p>
+          <div class="examples">Not sure? Try one:<br>
+            <button class="ex" data-ex="0">📦 Fake package text</button>
+            <button class="ex" data-ex="1">🚨 Grandchild in trouble</button>
+            <button class="ex" data-ex="2">🩺 Real reminder</button>
+          </div>
+          <div id="result" aria-live="polite"></div>
+        </div>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <svg viewBox="0 0 320 360">
+          <rect x="70" y="20" width="180" height="320" rx="30" fill="#2D1B3D"/>
+          <rect x="82" y="44" width="156" height="272" rx="16" fill="#FFFFFF"/>
+          <rect x="94" y="64" width="110" height="46" rx="14" fill="#F5F0FA"/>
+          <rect x="104" y="78" width="80" height="7" rx="3.5" fill="#C9BCD4"/>
+          <rect x="104" y="91" width="56" height="7" rx="3.5" fill="#C9BCD4"/>
+          <rect x="116" y="124" width="110" height="60" rx="14" fill="#FCE4E2"/>
+          <rect x="126" y="138" width="86" height="7" rx="3.5" fill="#E8A29C"/>
+          <rect x="126" y="151" width="70" height="7" rx="3.5" fill="#E8A29C"/>
+          <rect x="126" y="164" width="44" height="7" rx="3.5" fill="#E8A29C"/>
+          <rect x="94" y="198" width="96" height="46" rx="14" fill="#E3F4EA"/>
+          <rect x="104" y="212" width="70" height="7" rx="3.5" fill="#9BCFB0"/>
+          <rect x="104" y="225" width="48" height="7" rx="3.5" fill="#9BCFB0"/>
+          <g class="glass">
+            <circle cx="190" cy="160" r="56" fill="#FFF7DA" fill-opacity=".55" stroke="#F5B700" stroke-width="12"/>
+            <path d="M230 200l46 46" stroke="#F5B700" stroke-width="18" stroke-linecap="round"/>
+            <circle cx="172" cy="140" r="10" fill="#FFFFFF" fill-opacity=".8"/>
+          </g>
+          <circle cx="52" cy="70" r="10" fill="#F5B700"/>
+          <circle cx="282" cy="56" r="6" fill="#0E6B66"/>
+          <circle cx="40" cy="250" r="7" fill="#0E6B66"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="band" aria-labelledby="how">
+    <div class="wrap">
+      <h2 class="section-title" id="how">How it works</h2>
+      <p class="section-lede">No apps to download and no accounts to make. Just three easy steps.</p>
+      <ol class="steps">
+        <li><span class="step-num">1</span><h3>Copy the message</h3><p>Press and hold on the text or email, then choose Copy. For a phone call, just type what they said.</p></li>
+        <li><span class="step-num">2</span><h3>Paste it here</h3><p>Put it in the box at the top of this page and tap Check this message.</p></li>
+        <li><span class="step-num">3</span><h3>Get a clear answer</h3><p>You'll see Looks safe, Be careful, or Likely a scam, plus what to do next.</p></li>
+      </ol>
+    </div>
+  </section>
+  <section class="band" aria-labelledby="plan-title">
+    <div class="wrap">
+      <div class="plan" id="plan">
+        <div>
+          <h2 id="plan-title">Family Plan</h2>
+          <p class="price">$5 a month</p>
+          <ul>
+            <li>Unlimited checks for everyone in your family</li>
+            <li>Help keep Second Look running and growing</li>
+            <li>First access to text forwarding and family alerts</li>
+          </ul>
+        </div>
+        <div class="plan-box">
+          <a class="btn" id="buy" href="#" target="_blank" rel="noopener">Get the Family Plan</a>
+          <div class="code-row">
+            <label for="code" class="sr-only">Family code</label>
+            <input id="code" placeholder="Already a member? Enter your code" autocomplete="off">
+            <button id="use-code">Use code</button>
+          </div>
+          <p class="code-msg" id="code-msg"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="band" id="phone" aria-labelledby="phone-title">
+    <div class="wrap">
+      <div class="phone-card">
+        <img src="/apple-touch-icon.png" alt="" class="phone-icon">
+        <div class="phone-body">
+          <h2 id="phone-title">Keep Second Look on your phone</h2>
+          <p class="phone-lede">Add it to your home screen once, then just tap the icon whenever a message seems off.</p>
+
+          <ol class="how-add" id="add-ios" hidden>
+            <li>Tap the <b>Share</b> button at the bottom of Safari. It looks like this: <span class="share-ico" aria-label="Share icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7.5 7.5L12 3l4.5 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 11H5.5A1.5 1.5 0 0 0 4 12.5v7A1.5 1.5 0 0 0 5.5 21h13a1.5 1.5 0 0 0 1.5-1.5v-7a1.5 1.5 0 0 0-1.5-1.5H17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span></li>
+            <li>Scroll down and tap <b>Add to Home Screen</b>.</li>
+            <li>Tap <b>Add</b> in the top corner. Done!</li>
+          </ol>
+
+          <div id="add-android" hidden>
+            <button class="btn btn-small" id="install-btn" hidden>Add to home screen</button>
+            <ol class="how-add" id="add-android-steps">
+              <li>Tap the <b>three dots</b> <span class="share-ico" aria-label="Menu icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2" fill="currentColor"/><circle cx="12" cy="12" r="2" fill="currentColor"/><circle cx="12" cy="19" r="2" fill="currentColor"/></svg></span> in the top corner of Chrome.</li>
+              <li>Tap <b>Add to Home screen</b> or <b>Install app</b>.</li>
+              <li>Tap <b>Add</b> or <b>Install</b>. Done!</li>
+            </ol>
+          </div>
+
+          <p class="how-add-desk" id="add-desktop" hidden>Open this page on your phone, and you'll see simple steps to add it there.</p>
+          <p class="how-add-done" id="add-done" hidden>You're all set. Second Look is on your home screen.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="band" aria-labelledby="common">
+    <div class="wrap">
+      <h2 class="section-title" id="common">Scams to watch out for</h2>
+      <p class="section-lede">Most scams follow the same few patterns. If you know them, they're much easier to spot.</p>
+      <div class="scams">
+        <article class="scam"><span class="emoji" aria-hidden="true">📦</span><h3>The package problem</h3><p class="says">"Your delivery is on hold. Update your address here."</p><p class="tell"><b>Red flag:</b> a strange link and a rush to act. Real carriers don't text you random links.</p></article>
+        <article class="scam"><span class="emoji" aria-hidden="true">👵</span><h3>The family emergency</h3><p class="says">"Grandma, it's me. I'm in trouble. Please don't tell Mom."</p><p class="tell"><b>Red flag:</b> asking for secrecy and money fast. Hang up and call your grandchild directly.</p></article>
+        <article class="scam"><span class="emoji" aria-hidden="true">🏦</span><h3>The bank alert</h3><p class="says">"Suspicious activity on your account. Move your money to stay safe."</p><p class="tell"><b>Red flag:</b> your bank will never ask you to move money or share a code. Call the number on your card.</p></article>
+        <article class="scam"><span class="emoji" aria-hidden="true">🏛️</span><h3>The government call</h3><p class="says">"This is Social Security. Your number has been suspended."</p><p class="tell"><b>Red flag:</b> threats of arrest or fines. Government agencies don't call demanding payment.</p></article>
+        <article class="scam"><span class="emoji" aria-hidden="true">💻</span><h3>The computer pop-up</h3><p class="says">"Your computer has a virus! Call Microsoft support now."</p><p class="tell"><b>Red flag:</b> a loud warning with a phone number. Close the window and don't call.</p></article>
+        <article class="scam"><span class="emoji" aria-hidden="true">🎁</span><h3>The surprise prize</h3><p class="says">"Congratulations, you won! Just pay a small fee to claim it."</p><p class="tell"><b>Red flag:</b> you can't win a contest you never entered, and real prizes don't cost money.</p></article>
+      </div>
+    </div>
+  </section>
+  <section class="band" aria-labelledby="numbers">
+    <div class="wrap">
+      <h2 class="section-title" id="numbers">Scams are on the rise</h2>
+      <p class="section-lede">Scammers are busier than ever, and they're getting better at sounding real.</p>
+      <div class="stats">
+        <div class="stat"><strong>$15.9B</strong><span>reported lost to fraud by Americans in 2025, a record high</span></div>
+        <div class="stat"><strong>3 million</strong><span>fraud reports made to the government in a single year</span></div>
+        <div class="stat"><strong>1 in 3</strong><span>reports were about imposters pretending to be someone you trust</span></div>
+      </div>
+      <p class="source">Source: Federal Trade Commission, 2025 data. Many scams are never reported, so the real numbers are higher.</p>
+    </div>
+  </section>
+
+
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="rule">
+      <span class="emoji" aria-hidden="true">🛡️</span>
+      <div><strong>The golden rule</strong><p>Never send money, gift cards, or codes to someone who contacted you first. Hang up and call the person or company back using a number you already trust.</p></div>
+    </div>
+    <p class="fine">Second Look gives its best guess and can be wrong. If you're unsure, ask someone you trust before doing anything.</p>
+  </div>
+</footer>
+
+<script>
+
+// ===== Settings =====
+const STRIPE_LINK = "https://buy.stripe.com/your-link-here"; // paste your Stripe Payment Link
+// ====================
+
+const store = {
+  get(k){ try { return localStorage.getItem(k); } catch { return null; } },
+  set(k,v){ try { localStorage.setItem(k,v); } catch {} },
+  del(k){ try { localStorage.removeItem(k); } catch {} }
+};
+const familyCode = () => store.get("sl-code") || "";
+const meter = document.getElementById("meter");
+
+// The server keeps the real count; the page just shows it.
+function showRemaining(d){
+  if (d && d.family) { meter.textContent = "Family Plan: unlimited checks"; return; }
+  if (!d || typeof d.remaining !== "number") { meter.textContent = ""; return; }
+  meter.textContent = d.remaining === 1 ? "1 free check left today" : d.remaining + " free checks left today";
+}
+async function updateMeter(){
+  try {
+    const r = await fetch("/api/check?code=" + encodeURIComponent(familyCode()));
+    const d = await r.json();
+    if (d.badCode) { store.del("sl-code"); codeMsg.textContent = "That family code didn't work. Check it and try again."; }
+    showRemaining(d);
+  } catch { meter.textContent = ""; }
+}
+
+const examples = [
+  "USPS: Your package is on hold due to an incomplete address. Update your details within 24 hours or it will be returned: usps-redelivery-help.com/track",
+  "Grandma it's me, I got in a car accident and I'm at the police station. Please don't tell Mom. I need $2,000 for bail, can you get Target gift cards and send me the numbers? I'll pay you back.",
+  "Hi, this is Dr. Patel's office reminding you of your appointment Thursday at 10:30am. Reply C to confirm or call us at the number on your card to reschedule."
+];
+const msg = document.getElementById("msg");
+const btn = document.getElementById("check");
+const out = document.getElementById("result");
+document.querySelectorAll(".ex").forEach(b => b.onclick = () => { msg.value = examples[+b.dataset.ex]; out.innerHTML = ""; msg.focus(); });
+
+const icons = {
+  safe:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="currentColor"/><path d="M7 12.5l3.2 3.2L17 9" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  warn:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2L23 21H1z" fill="currentColor"/><path d="M12 9v5" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/><circle cx="12" cy="17.6" r="1.5" fill="#fff"/></svg>',
+  bad:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="currentColor"/><path d="M8 8l8 8M16 8l-8 8" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>'
+};
+const titles = { safe:"Looks safe", warn:"Be careful", bad:"Likely a scam" };
+
+function el(tag, cls, text){ const e=document.createElement(tag); if(cls) e.className=cls; if(text!=null) e.textContent=text; return e; }
+function status(text){ out.innerHTML=""; out.appendChild(el("div","status",text)); }
+
+function render(r){
+  const kind = ["safe","warn","bad"].includes(r.verdict) ? r.verdict : "warn";
+  out.innerHTML="";
+  const box = el("div","verdict "+kind);
+  const big = el("p","big"); big.innerHTML = icons[kind]; big.appendChild(document.createTextNode(titles[kind]));
+  box.appendChild(big);
+  if (r.summary) box.appendChild(el("p",null,r.summary));
+  if (Array.isArray(r.reasons) && r.reasons.length){
+    box.appendChild(el("h2",null,"Why we think so"));
+    const ul = el("ul"); r.reasons.slice(0,4).forEach(x => ul.appendChild(el("li",null,x))); box.appendChild(ul);
+  }
+  if (r.next_step){ box.appendChild(el("h2",null,"What to do")); box.appendChild(el("p",null,r.next_step)); }
+  out.appendChild(box);
+  const again = el("button","link","Check another message");
+  again.onclick = () => { msg.value=""; out.innerHTML=""; msg.focus(); };
+  out.appendChild(again);
+  if (!familyCode()) {
+    const nudge = el("p","plan-nudge");
+    nudge.appendChild(document.createTextNode("Want unlimited checks for your whole family? "));
+    const a = el("a",null,"See the Family Plan"); a.href = "#plan";
+    nudge.appendChild(a);
+    out.appendChild(nudge);
+  }
+  box.scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+btn.onclick = async () => {
+  const text = msg.value.trim();
+  if (!text){ status("Paste a message in the box above first, then tap Check this message."); msg.focus(); return; }
+  btn.disabled = true; btn.textContent = "Checking…";
+  status("Taking a careful look. This can take a few seconds.");
+  try {
+    const res = await fetch("/api/check", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: text, code: familyCode() })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.status === 402) {
+      if (data.badCode) { store.del("sl-code"); codeIn.value = ""; codeMsg.textContent = "That family code didn't work. Check it and try again."; }
+      showRemaining(data); showLimit(data.error); reset(); return;
+    }
+    if (!res.ok) throw new Error(data.error || "Something went wrong while checking. Try again in a moment.");
+    showRemaining(data);
+    render(data);
+  } catch (e) {
+    status(e.message || "Something went wrong while checking. Try again in a moment.");
+  }
+  reset();
+};
+function showLimit(text){
+  out.innerHTML = "";
+  const box = el("div","verdict warn");
+  box.appendChild(el("p","big","That's today's free checks"));
+  box.appendChild(el("p",null, text || "Free checks come back tomorrow. For unlimited checks for the whole family, get the Family Plan."));
+  const go = el("button","link","See the Family Plan");
+  go.onclick = () => document.getElementById("plan").scrollIntoView({behavior:"smooth"});
+  out.appendChild(box); out.appendChild(go);
+  box.scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+const buy = document.getElementById("buy");
+if (STRIPE_LINK.includes("your-link-here")) {
+  buy.textContent = "Family Plan coming soon";
+  buy.removeAttribute("href"); buy.removeAttribute("target");
+  buy.classList.add("soon"); buy.setAttribute("aria-disabled","true");
+} else {
+  buy.href = STRIPE_LINK;
+}
+const codeIn = document.getElementById("code"), codeMsg = document.getElementById("code-msg");
+codeIn.value = familyCode();
+document.getElementById("use-code").onclick = () => {
+  const c = codeIn.value.trim();
+  if (!c) { store.del("sl-code"); codeMsg.textContent = "Code removed."; updateMeter(); return; }
+  store.set("sl-code", c);
+  codeMsg.textContent = "Code saved.";
+  updateMeter();
+};
+updateMeter();
+
+// ===== Home screen install =====
+(function(){
+  const show = id => { const e = document.getElementById(id); if (e) e.hidden = false; };
+  const standalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone;
+  if (standalone) { show("add-done"); return; }
+  const ua = navigator.userAgent;
+  const isIOS = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const isAndroid = /Android/.test(ua);
+  if (isIOS) show("add-ios");
+  else if (isAndroid) show("add-android");
+  else show("add-desktop");
+
+  const b = document.getElementById("install-btn"), steps = document.getElementById("add-android-steps");
+  let deferred = null;
+  window.addEventListener("beforeinstallprompt", e => {
+    e.preventDefault(); deferred = e;
+    show("add-android"); document.getElementById("add-desktop").hidden = true;
+    b.hidden = false; steps.hidden = true; // one-tap button replaces the steps
+  });
+  b.onclick = async () => {
+    if (!deferred) return;
+    deferred.prompt();
+    const choice = await deferred.userChoice;
+    deferred = null; b.hidden = true;
+    if (choice.outcome === "accepted") { document.getElementById("add-android").hidden = true; show("add-done"); }
+    else steps.hidden = false;
+  };
+  window.addEventListener("appinstalled", () => {
+    ["add-ios","add-android","add-desktop"].forEach(id => document.getElementById(id).hidden = true);
+    show("add-done");
+  });
+})();
+
+function reset(){ btn.disabled = false; btn.textContent = "Check this message"; }
+</script>
+</body>
+</html>
