@@ -10,6 +10,12 @@
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#FFE7A1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Second Look">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Fredoka:wght@500;600&display=swap" rel="stylesheet">
@@ -120,6 +126,13 @@ section.band{padding:64px 0 8px}
 .code-msg{margin:10px 0 0;font-size:17px;color:var(--muted)}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
+.install{display:none;margin-top:18px;align-items:center;gap:16px;background:var(--card);border:2px dashed var(--sun-deep);border-radius:22px;padding:18px 20px}
+.install.show{display:flex}
+.install img{width:56px;height:56px;border-radius:14px;flex:none}
+.install p{margin:0;font-size:18px}
+.install strong{display:block;font-family:"Fredoka",sans-serif;font-size:21px;font-weight:600}
+.install button{margin-left:auto;flex:none;padding:12px 18px;font:inherit;font-size:18px;font-weight:700;color:var(--brand-ink);background:var(--brand);border:0;border-radius:999px;cursor:pointer}
+@media (max-width:520px){.install{flex-wrap:wrap}.install button{margin-left:0;width:100%}}
 footer{margin-top:64px;padding:40px 0 48px;border-top:2px solid var(--line)}
 .rule{display:flex;gap:16px;align-items:flex-start;background:var(--soft);border-radius:22px;padding:22px}
 .rule .emoji{font-size:34px;line-height:1}
@@ -255,7 +268,12 @@ footer{margin-top:64px;padding:40px 0 48px;border-top:2px solid var(--line)}
 
 <footer>
   <div class="wrap">
-    <div class="rule">
+    <div class="install" id="install" aria-live="polite">
+      <img src="/apple-touch-icon.png" alt="">
+      <p><strong>Put Second Look on your phone</strong><span id="install-text">Get one-tap access from your home screen, just like an app.</span></p>
+      <button id="install-btn" hidden>Add to home screen</button>
+    </div>
+    <div class="rule" style="margin-top:18px">
       <span class="emoji" aria-hidden="true">🛡️</span>
       <div><strong>The golden rule</strong><p>Never send money, gift cards, or codes to someone who contacted you first. Hang up and call the person or company back using a number you already trust.</p></div>
     </div>
@@ -384,6 +402,32 @@ document.getElementById("use-code").onclick = () => {
   updateMeter();
 };
 updateMeter();
+
+// ===== Home screen install =====
+(function(){
+  const box = document.getElementById("install"), txt = document.getElementById("install-text"), b = document.getElementById("install-btn");
+  const standalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone;
+  if (standalone) return; // already installed
+  const ua = navigator.userAgent;
+  const isIOS = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  let deferred = null;
+  window.addEventListener("beforeinstallprompt", e => {
+    e.preventDefault(); deferred = e;
+    b.hidden = false; box.classList.add("show");
+  });
+  b.onclick = async () => {
+    if (!deferred) return;
+    deferred.prompt();
+    const choice = await deferred.userChoice;
+    deferred = null; b.hidden = true;
+    txt.textContent = choice.outcome === "accepted" ? "Added! Look for the Second Look icon on your home screen." : "No problem. You can add it anytime from your browser's menu.";
+  };
+  if (isIOS) {
+    txt.textContent = "On iPhone or iPad: tap the Share button (the square with an arrow), then tap Add to Home Screen.";
+    box.classList.add("show");
+  }
+  window.addEventListener("appinstalled", () => { b.hidden = true; txt.textContent = "Added! Look for the Second Look icon on your home screen."; });
+})();
 
 function reset(){ btn.disabled = false; btn.textContent = "Check this message"; }
 </script>

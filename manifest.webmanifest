@@ -1,0 +1,14 @@
+{
+  "name": "Second Look – Scam Checker",
+  "short_name": "Second Look",
+  "description": "Paste a suspicious text, email, or call and find out if it's a scam, in plain words.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#FFE7A1",
+  "theme_color": "#FFE7A1",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
